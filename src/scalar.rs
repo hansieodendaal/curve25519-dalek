@@ -316,8 +316,8 @@ impl<'a, 'b> Add<&'b Scalar> for &'a Scalar {
         // before repacking.
         println!(
             "Scalar add: self {:?}, rhs {:?}",
-            &self.unpack(),
-            &_rhs.unpack()
+            hex::encode(&self.to_bytes()),
+            hex::encode(&_rhs.to_bytes())
         );
         let sum = UnpackedScalar::add(&self.unpack(), &_rhs.unpack());
         let sum_R = UnpackedScalar::mul_internal(&sum, &constants::R);
