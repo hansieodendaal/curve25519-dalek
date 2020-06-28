@@ -200,6 +200,8 @@ use backend::serial::scalar_mul;
 ))]
 use backend::vector::scalar_mul;
 
+use hex;
+
 // ------------------------------------------------------------------------
 // Compressed points
 // ------------------------------------------------------------------------
@@ -786,6 +788,11 @@ impl<'a, 'b> Add<&'b RistrettoPoint> for &'a RistrettoPoint {
     type Output = RistrettoPoint;
 
     fn add(self, other: &'b RistrettoPoint) -> RistrettoPoint {
+        println!(
+            "RistrettoPoint add:     self {:?}, rhs {:?}",
+            hex::encode(&self.0.compress().to_bytes()),
+            hex::encode(&other.0.compress().to_bytes())
+        );
         RistrettoPoint(&self.0 + &other.0)
     }
 }
