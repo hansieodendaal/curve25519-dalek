@@ -511,6 +511,7 @@ impl From<u64> for Scalar {
         use byteorder::{ByteOrder, LittleEndian};
         let mut s_bytes = [0u8; 32];
         LittleEndian::write_u64(&mut s_bytes, x);
+        println!("from(x: u64) -> Scalar: {:?}, x: {:?}", hex::encode(s_bytes), x);
         Scalar{ bytes: s_bytes }
     }
 }
