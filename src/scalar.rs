@@ -314,11 +314,6 @@ impl<'a, 'b> Add<&'b Scalar> for &'a Scalar {
         // be reduced -- they might come from Scalar::from_bits.  So
         // after computing the sum, we explicitly reduce it mod l
         // before repacking.
-        println!(
-            "Scalar add: self {:?}, rhs {:?}",
-            hex::encode(&self.to_bytes()),
-            hex::encode(&_rhs.to_bytes())
-        );
         let sum = UnpackedScalar::add(&self.unpack(), &_rhs.unpack());
         let sum_R = UnpackedScalar::mul_internal(&sum, &constants::R);
         let sum_mod_l = UnpackedScalar::montgomery_reduce(&sum_R);

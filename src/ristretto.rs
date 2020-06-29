@@ -788,11 +788,6 @@ impl<'a, 'b> Add<&'b RistrettoPoint> for &'a RistrettoPoint {
     type Output = RistrettoPoint;
 
     fn add(self, other: &'b RistrettoPoint) -> RistrettoPoint {
-        println!(
-            "RistrettoPoint add:     self {:?}, rhs {:?}",
-            hex::encode(&self.0.compress().to_bytes()),
-            hex::encode(&other.0.compress().to_bytes())
-        );
         RistrettoPoint(&self.0 + &other.0)
     }
 }
@@ -1099,6 +1094,101 @@ mod test {
     use traits::{Identity};
     use super::*;
 
+    /// Test multiscalar_mul
+    #[test]
+    fn multiscalar_mul_consistency() {
+        // multiscalar_mul: H:  "90ca11cd6c6227cb0abc39e2710c444ae6617ea81898e716353f3410d9656605", G: "e2f2ae0a6abc4e71a884a961c500515f58e30b6aa582dd8db6a65945e08d2d76"
+
+        // #9182 (fail)
+        // multiscalar_mul: v:  "7de5de4801000000000000000000000000000000000000000000000000000000", k: "0000000000000000000000000000000000000000000000000000000000000000"
+        // multiscalar_mul      "d08bb280f47c0eafd55971634618c623d6fd455ce690253409df4f9f4d1b3f69"
+
+        // #9430 (fail)
+        // multiscalar_mul: v:  "61b8d54801000000000000000000000000000000000000000000000000000000", k: "0000000000000000000000000000000000000000000000000000000000000000"
+        // multiscalar_mul      "68ced30937abb08cc47ab1f500b423d9fb953276ac934234085dece60d851355"
+        
+        // #10855 (pass)
+        // multiscalar_mul: v:  "7003a14801000000000000000000000000000000000000000000000000000000", k: "0000000000000000000000000000000000000000000000000000000000000000"
+        // multiscalar_mul      "38c546583555aacef2c22c1a66b2887961780893fb68027994a98ab962c5e718"
+
+        // #10856 (fail)               
+        // multiscalar_mul: v:  "f8f9a04801000000000000000000000000000000000000000000000000000000", k: "0000000000000000000000000000000000000000000000000000000000000000"
+        // multiscalar_mul:     "585fe9cdbfd9ac76fc70829f76bfe31e5f817bcfff85a51d4623d4167180ba78"
+        
+        // #10857 (pass)
+        // multiscalar_mul: v:  "81f0a04801000000000000000000000000000000000000000000000000000000", k: "0000000000000000000000000000000000000000000000000000000000000000"
+        // multiscalar_mul      "b2b413bb401fb3d0671a384c661cd2dc3f16beda83adc75edf14511974f04f46"
+        
+        // #11708 (fail)
+        // multiscalar_mul: v:  "a67a814801000000000000000000000000000000000000000000000000000000", k: "0000000000000000000000000000000000000000000000000000000000000000"
+        // multiscalar_mul:     "7cc04445e01ab067345195e542fb4d76cb991ee8c0814dbaa38b731a13e7bf77"
+        
+        // #30335 (fail)
+        // multiscalar_mul: v:  "89cdd34501000000000000000000000000000000000000000000000000000000", k: "0000000000000000000000000000000000000000000000000000000000000000"
+        // multiscalar_mul      "b63da747290b9d94042cb8637f326510b193c114bdac2f4c43e56e009003d05d"
+        
+        // #33923 (fail)
+        // multiscalar_mul: v:  "7f5e504501000000000000000000000000000000000000000000000000000000", k: "0000000000000000000000000000000000000000000000000000000000000000"
+        // multiscalar_mul      "2caef17140bd933afc5bd3af8c777fb40730a223aca09a4109845b625a64917f"
+        
+        // #34947 (fail)
+        // multiscalar_mul: v:  "81e52a4501000000000000000000000000000000000000000000000000000000", k: "0000000000000000000000000000000000000000000000000000000000000000"
+        // multiscalar_mul      "a075dfb4a0f4f887147ff759d46e26a85de07f3e3070baf5b0deab5494f88a02"
+        
+
+        let v_hex_array = [
+            "7de5de4801000000000000000000000000000000000000000000000000000000", // #9182  (fail)
+            "61b8d54801000000000000000000000000000000000000000000000000000000", // #9430  (fail)
+            "7003a14801000000000000000000000000000000000000000000000000000000", // #10855 (pass)
+            "f8f9a04801000000000000000000000000000000000000000000000000000000", // #10856 (fail) 
+            "81f0a04801000000000000000000000000000000000000000000000000000000", // #10857 (pass)
+            "a67a814801000000000000000000000000000000000000000000000000000000", // #11708 (fail)
+            "89cdd34501000000000000000000000000000000000000000000000000000000", // #30335 (fail)
+            "7f5e504501000000000000000000000000000000000000000000000000000000", // #33923 (fail)
+            "81e52a4501000000000000000000000000000000000000000000000000000000", // #34947 (fail)
+        ];
+        let mut v_bytes = [0u8; 32];
+
+        let commit_hex_array = [ // Windows
+            "d08bb280f47c0eafd55971634618c623d6fd455ce690253409df4f9f4d1b3f69", // #9182  (fail)
+            "68ced30937abb08cc47ab1f500b423d9fb953276ac934234085dece60d851355", // #9430  (fail)
+            "38c546583555aacef2c22c1a66b2887961780893fb68027994a98ab962c5e718", // #10855 (pass)
+            "585fe9cdbfd9ac76fc70829f76bfe31e5f817bcfff85a51d4623d4167180ba78", // #10856 (fail) 
+            "b2b413bb401fb3d0671a384c661cd2dc3f16beda83adc75edf14511974f04f46", // #10857 (pass)
+            "7cc04445e01ab067345195e542fb4d76cb991ee8c0814dbaa38b731a13e7bf77", // #11708 (fail)
+            "b63da747290b9d94042cb8637f326510b193c114bdac2f4c43e56e009003d05d", // #30335 (fail)
+            "2caef17140bd933afc5bd3af8c777fb40730a223aca09a4109845b625a64917f", // #33923 (fail)
+            "a075dfb4a0f4f887147ff759d46e26a85de07f3e3070baf5b0deab5494f88a02", // #34947 (fail)
+        ];
+
+        let mut k_bytes = [0u8; 32];
+        k_bytes.copy_from_slice(&hex::decode("0000000000000000000000000000000000000000000000000000000000000000").unwrap());
+        let k = Scalar::from_bits(k_bytes);
+
+        let mut H_bytes = [0u8; 32];
+        H_bytes.copy_from_slice(&hex::decode("90ca11cd6c6227cb0abc39e2710c444ae6617ea81898e716353f3410d9656605").unwrap());
+        let H: RistrettoPoint = CompressedRistretto(H_bytes).decompress().unwrap();
+
+        let G = constants::RISTRETTO_BASEPOINT_POINT;
+
+        println!();
+        println!("H:               {:?}, G: {:?}", hex::encode(&H.compress().as_bytes()), hex::encode(&G.compress().as_bytes()));
+
+        let iter = v_hex_array.iter().zip(&commit_hex_array);
+        for item in iter {
+            v_bytes.copy_from_slice(&hex::decode(&item.0).unwrap());
+            let v = Scalar::from_bits(v_bytes);
+            let c = RistrettoPoint::multiscalar_mul(&[v, k], &[H, G]);
+            assert_eq!(**item.1, hex::encode(&c.compress().as_bytes()));
+            println!();
+            println!("v:               {:?}, k: {:?}", hex::encode(&v.as_bytes()), hex::encode(&k.as_bytes()));
+            println!("multiscalar_mul: {:?}", hex::encode(&c.compress().as_bytes()));
+        }
+
+        println!();
+        panic!();
+    }
+    
     #[test]
     #[cfg(feature = "serde")]
     fn serde_bincode_basepoint_roundtrip() {
